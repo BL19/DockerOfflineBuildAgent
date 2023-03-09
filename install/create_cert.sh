@@ -1,0 +1,2 @@
+echo "> Creating self-signed certificate"
+openssl req -x509 -nodes -days 365 -subj "/C=CA/ST=QC/O=DevOps DockerBuild/CN=outgoing_relay" -addext "subjectAltName=DNS:outgoing_relay" -newkey rsa:2048 -keyout ./nginx-selfsigned.key -out ./nginx-selfsigned.crt

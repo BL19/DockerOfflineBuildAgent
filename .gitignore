@@ -1,0 +1,6 @@
+vsts-agent*
+nginx-selfsigned.crt
+nginx-selfsigned.key
+.env
+verdaccio/
+azp_diagnostics/

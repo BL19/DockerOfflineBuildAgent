@@ -1,0 +1,52 @@
+version: '3'
+services:
+  azure_build_agent:
+    image: dockeragent:latest
+    environment:
+      - AZP_URL=https://outgoing_relay/DefaultCollection
+      - AZP_TOKEN
+      - AZP_POOL=Default
+    # volumes:
+    #   - ./azp_diagnostics:/azp/_diag
+    restart: always
+    networks:
+      - internal_build_network
+    depends_on:
+      - outgoing_relay
+      - verdaccio
+    deploy:
+      mode: replicated
+      replicas: 1
+  outgoing_relay:
+    image: nginx:latest
+    container_name: outgoing_relay
+    ports:
+      - "80:80"
+    environment:
+      - AZP_HOST
+      - NGINX_ENVSUBST_OUTPUT_DIR=/etc/nginx
+    volumes:
+      - ./relay-nginx.conf:/etc/nginx/templates/nginx.conf.template:ro
+      - ./nginx-selfsigned.crt:/etc/ssl/certs/nginx-selfsigned.crt:ro
+      - ./nginx-selfsigned.key:/etc/ssl/private/nginx-selfsigned.key:ro
+    restart: always
+    networks:
+      - internal_build_network
+      - outgoing_access
+  verdaccio:
+    image: verdaccio/verdaccio:latest
+    container_name: verdaccio
+    ports:
+      - "4873:4873"
+    volumes:
+      - ./verdaccio/plugins:/verdaccio/plugins
+      - ./verdaccio/storage:/verdaccio/storage
+      - ./verdaccio/conf:/verdaccio/conf
+    restart: always
+    networks:
+      - internal_build_network
+      - outgoing_access
+networks:
+  internal_build_network:
+    internal: true
+  outgoing_access:
